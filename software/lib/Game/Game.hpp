@@ -86,10 +86,36 @@ class Game {
             addRandom();
         }
 
-        void Move(Direction moveDirection){
+        void PlayMove(Direction moveDirection){
           for (int i = 0; i < 16; i++) { blockMerge[i] = false; }
           couldMove = false;
           direction = moveDirection;
+        }
+
+        void MoveTile(int x, int y, int dx, int dy){
+          if (Tile(x,y) == 0) {
+            return;
+          }
+
+          if (Tile(x+dx, y+dy) == 0){
+            setPosition(x+dx, y+dy, Tile(x,y));
+            setPosition(x,y, 0);
+            setBlockMerge(x+dx, y+dy, getBlockMerge(x,y));
+            setBlockMerge(x,y, false);
+            couldMove = true;
+            animating = true;
+            return;
+          }
+
+          if (Tile(x+dx, y+dy) == Tile(x,y) && !(getBlockMerge(x+dx, y+dy) || getBlockMerge(x, y))){
+            setPosition(x+dx, y+dy, Tile(x,y)*2);
+            setPosition(x,y, 0);
+            setBlockMerge(x+dx, y+dy, true);
+            setBlockMerge(x,y, false);
+            couldMove = true;
+            animating = true;
+            return;
+          }
         }
 
         void Step(){
@@ -102,30 +128,7 @@ class Game {
           if (direction == RIGHT) {
             for(int y = 0; y < 4; y++){
               for (int x = 1; x < 4; x++) {
-                
-                if (Tile(x,y) == 0) {
-                  continue;
-                }
-
-                if (Tile(x-1, y) == 0){
-                  setPosition(x-1,y, Tile(x,y));
-                  setPosition(x,y, 0);
-                  setBlockMerge(x-1,y, getBlockMerge(x,y));
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
-
-                if (Tile(x-1, y) == Tile(x,y) && !(getBlockMerge(x-1, y) || getBlockMerge(x, y))){
-                  setPosition(x-1,y, Tile(x,y)*2);
-                  setPosition(x,y, 0);
-                  setBlockMerge(x-1,y, true);
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
+                MoveTile(x,y,-1,0);
               }
             }
           }
@@ -133,30 +136,7 @@ class Game {
           if (direction == LEFT) {
             for(int y = 0; y < 4; y++){
               for (int x = 2; x >= 0; x--) {
-                
-                if (Tile(x,y) == 0) {
-                  continue;
-                }
-
-                if (Tile(x+1, y) == 0){
-                  setPosition(x+1,y, Tile(x,y));
-                  setPosition(x,y, 0);
-                  setBlockMerge(x+1,y, getBlockMerge(x,y));
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
-
-                if (Tile(x+1, y) == Tile(x,y) && !(getBlockMerge(x+1, y) || getBlockMerge(x, y))){
-                  setPosition(x+1,y, Tile(x,y)*2);
-                  setPosition(x,y, 0);
-                  setBlockMerge(x+1,y, true);
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
+                MoveTile(x,y,1,0);
               }
             }
           }
@@ -164,61 +144,15 @@ class Game {
           if (direction == DOWN) {
             for(int x = 0; x < 4; x++){
               for (int y = 1; y < 4; y++) {
-                
-                if (Tile(x,y) == 0) {
-                  continue;
-                }
-
-                if (Tile(x, y-1) == 0){
-                  setPosition(x,y-1, Tile(x,y));
-                  setPosition(x,y, 0);
-                  setBlockMerge(x,y-1, getBlockMerge(x,y));
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
-
-                if (Tile(x, y-1) == Tile(x,y) && !(getBlockMerge(x, y-1) || getBlockMerge(x, y))){
-                  setPosition(x,y-1, Tile(x,y)*2);
-                  setPosition(x,y, 0);
-                  setBlockMerge(x,y-1, true);
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
+                MoveTile(x,y,0,-1);
               }
             }
           }
 
-          if (direction == UP) {
+          if (direction == UP) {            
             for(int x = 0; x < 4; x++){
               for (int y = 2; y >= 0; y--) {
-                
-                if (Tile(x,y) == 0) {
-                  continue;
-                }
-
-                if (Tile(x, y+1) == 0){
-                  setPosition(x,y+1, Tile(x,y));
-                  setPosition(x,y, 0);
-                  setBlockMerge(x,y+1, getBlockMerge(x,y));
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
-
-                if (Tile(x, y+1) == Tile(x,y) && !(getBlockMerge(x, y+1) || getBlockMerge(x, y))){
-                  setPosition(x,y+1, Tile(x,y)*2);
-                  setPosition(x,y, 0);
-                  setBlockMerge(x,y+1, true);
-                  setBlockMerge(x,y, false);
-                  couldMove = true;
-                  animating = true;
-                  continue;
-                }
+                MoveTile(x,y,0,1);
               }
             }
           }

@@ -148,13 +148,15 @@ void loop() {
     }
 
     if (direction != NONE){
-      game.Move(direction);
+      game.PlayMove(direction);
       reset = false;
     }
   }
 
   do {
     game.Step();
+    draw();
+    delay(50);
     yield();
   } while (game.Animating());
 
@@ -163,6 +165,5 @@ void loop() {
     reset = true;
   }
 
-  draw();
   yield();
 }
