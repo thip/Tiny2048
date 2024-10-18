@@ -31,35 +31,8 @@ volatile int count = 0;
 
 Game game;
 
-void every_milli(){
-  count++;
-}
-
-void setup() {
-  USBSerial.begin(9600);
-  USBSerial.setDebugOutput(true);
-  USBSerial.write("Starting up\n");
-  delay(500);
-
-  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
-  FastLED.setBrightness( BRIGHTNESS );
-  FastLED.clear(true);
-  
-  Wire.begin(GPIO_NUM_17, GPIO_NUM_18);
-  if (!lis.begin()){
-    USBSerial.println("Failed to start accelerometer");
-    while(1) yield();
-  }
-
-  USBSerial.println("LIS3DH connected");
-
-  lis.read();
-  randomSeed(lis.x_g*lis.y_g);
-
-  ticker.attach_ms(1, every_milli);
-
-  game.New();
-}
+Direction direction = NONE;
+bool reset = true;
 
 CRGB value_color(int value){
   switch (value)
@@ -102,8 +75,21 @@ CRGB value_color(int value){
   }
 }
 
-bool nextTurn = true;
-Direction direction = NONE;
+void showGameLostSequence()
+{
+  delay(2000);
+
+  for (int i = 0; i < 3; i++){
+    fill_solid(leds, NUM_LEDS, CRGB::Red);
+    FastLED.show();
+    delay(500);
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+    FastLED.show();
+    delay(250);
+  }
+
+  delay(1000);
+}
 
 void draw() {
   for (int x = 0; x < 4; x++){
@@ -119,11 +105,37 @@ void draw() {
   FastLED.show();
 }
 
+void every_milli(){
+  count++;
+}
 
-bool reset = true;
+void setup() {
+  USBSerial.begin(9600);
+  USBSerial.setDebugOutput(true);
+  USBSerial.write("Starting up\n");
+  delay(500);
+
+  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.setBrightness( BRIGHTNESS );
+  FastLED.clear(true);
+  
+  Wire.begin(GPIO_NUM_17, GPIO_NUM_18);
+  if (!lis.begin()){
+    USBSerial.println("Failed to start accelerometer");
+    while(1) yield();
+  }
+
+  USBSerial.println("LIS3DH connected");
+
+  lis.read();
+  randomSeed(lis.x_g*lis.y_g);
+
+  ticker.attach_ms(1, every_milli);
+
+  game.New();
+}
 
 void loop() {  
-
   lis.read();
   float xAccel = lis.x_g;
   float yAccel = lis.y_g;
@@ -150,6 +162,9 @@ void loop() {
     if (direction != NONE){
       game.PlayMove(direction);
       reset = false;
+    } else if (!game.MovesAvailable()) {
+      showGameLostSequence();
+      game.New();
     }
   }
 
@@ -167,3 +182,4 @@ void loop() {
 
   yield();
 }
+

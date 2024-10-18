@@ -92,12 +92,62 @@ class Game {
           direction = moveDirection;
         }
 
+        bool TileEmpty(int x, int y){
+          return Tile(x,y) == 0;
+        }
+
+        bool TilesCanMerge(int x, int y, int dx, int dy){
+          return Tile(x+dx, y+dy) == Tile(x,y) && !(getBlockMerge(x+dx, y+dy) || getBlockMerge(x, y));
+        }
+
+        bool MovesAvailable(){
+            for(int i = 0; i < 16; i++){
+              if (board[i] == 0) {
+                return true;
+              }
+            }
+          
+            for(int y = 0; y < 4; y++){
+              for (int x = 1; x < 4; x++) {
+                if (TilesCanMerge(x,y,-1,0)){
+                  return true;
+                };
+              }
+            }
+          
+            for(int y = 0; y < 4; y++){
+              for (int x = 2; x >= 0; x--) {
+                if (TilesCanMerge(x,y,1,0)){
+                  return true;
+                };
+              }
+            }
+          
+            for(int x = 0; x < 4; x++){
+              for (int y = 1; y < 4; y++) {
+                if (TilesCanMerge(x,y,0,-1)){
+                  return true;
+                };
+              }
+            }
+                 
+            for(int x = 0; x < 4; x++){
+              for (int y = 2; y >= 0; y--) {
+                if (TilesCanMerge(x,y,0,1)){
+                  return true;
+                };
+              }
+            }
+
+            return false;
+        }
+
         void MoveTile(int x, int y, int dx, int dy){
-          if (Tile(x,y) == 0) {
+          if (TileEmpty(x,y)) {
             return;
           }
 
-          if (Tile(x+dx, y+dy) == 0){
+          if (TileEmpty(x+dx, y+dy)){
             setPosition(x+dx, y+dy, Tile(x,y));
             setPosition(x,y, 0);
             setBlockMerge(x+dx, y+dy, getBlockMerge(x,y));
@@ -107,7 +157,7 @@ class Game {
             return;
           }
 
-          if (Tile(x+dx, y+dy) == Tile(x,y) && !(getBlockMerge(x+dx, y+dy) || getBlockMerge(x, y))){
+          if (TilesCanMerge(x, y, dx, dy)){
             setPosition(x+dx, y+dy, Tile(x,y)*2);
             setPosition(x,y, 0);
             setBlockMerge(x+dx, y+dy, true);
