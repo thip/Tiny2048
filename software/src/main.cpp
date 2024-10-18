@@ -75,6 +75,35 @@ CRGB value_color(int value){
   }
 }
 
+void draw() {
+  for (int x = 0; x < 4; x++){
+    for (int y = 0; y < 4; y++){
+      if (y & 0b01){
+        leds[(3-x)+(y*4)] = value_color(game.Tile(x, y));
+      } else {
+        leds[(x)+(y*4)] = value_color(game.Tile(x, y));
+      }
+    }
+  }
+  
+  FastLED.show();
+}
+
+void showGameWonSequence()
+{
+  for (int i = 0; i < 3000; i += 50)
+  {
+    draw();
+    delay(50);
+  }
+  for (int i = 0; i < 5000; i += 50)
+  {
+    fill_rainbow(leds, 16, (millis() / 10) % 255);
+    FastLED.show();
+    delay(50);
+  }
+}
+
 void showGameLostSequence()
 {
   delay(2000);
@@ -89,20 +118,6 @@ void showGameLostSequence()
   }
 
   delay(1000);
-}
-
-void draw() {
-  for (int x = 0; x < 4; x++){
-    for (int y = 0; y < 4; y++){
-      if (y & 0b01){
-        leds[(3-x)+(y*4)] = value_color(game.Tile(x, y));
-      } else {
-        leds[(x)+(y*4)] = value_color(game.Tile(x, y));
-      }
-    }
-  }
-  
-  FastLED.show();
 }
 
 void every_milli(){
@@ -151,7 +166,7 @@ void loop() {
       direction = LEFT;
     }
 
-      if(yAccel > 0.3f){
+    if(yAccel > 0.3f){
       direction = UP;
     }
 
@@ -162,6 +177,9 @@ void loop() {
     if (direction != NONE){
       game.PlayMove(direction);
       reset = false;
+    } else if (game.GameWon()){
+      showGameWonSequence();
+      game.New();
     } else if (!game.MovesAvailable()) {
       showGameLostSequence();
       game.New();
@@ -182,4 +200,3 @@ void loop() {
 
   yield();
 }
-

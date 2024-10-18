@@ -16,6 +16,7 @@ typedef enum {
 
 class Game {
     private:
+      bool gameWon = false;
       bool animating = false;
       bool couldMove = false;
       Direction direction = NONE;
@@ -81,9 +82,14 @@ class Game {
         }
 
         void New(){
+            gameWon = false;
             for (int i = 0; i < 16; i++) { board[i] = 0; }
             addRandom();
             addRandom();
+        }
+
+        bool GameWon(){
+          return gameWon;
         }
 
         void PlayMove(Direction moveDirection){
@@ -164,6 +170,10 @@ class Game {
             setBlockMerge(x,y, false);
             couldMove = true;
             animating = true;
+
+            if (Tile(x+dx,y+dy) == 2048) {
+              gameWon = true;
+            }
             return;
           }
         }
